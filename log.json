@@ -14,5 +14,21 @@
         "notes": ""
       }
     ]
+  },
+  {
+    "id": "1783177545751",
+    "date": "2026-07-04",
+    "name": "T1",
+    "notes": "",
+    "exercises": [
+      {
+        "exercise": "Overhead Tricep Ext (cable)",
+        "sets": "3",
+        "reps": "8",
+        "weight": 5,
+        "rpe": "",
+        "notes": ""
+      }
+    ]
   }
 ]
