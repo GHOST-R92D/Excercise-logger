@@ -1,1 +1,18 @@
-
+[
+  {
+    "id": "1783177071355",
+    "date": "2026-07-04",
+    "name": "S1",
+    "notes": "",
+    "exercises": [
+      {
+        "exercise": "Barbell Bench Press",
+        "sets": "3",
+        "reps": "8",
+        "weight": 15,
+        "rpe": "",
+        "notes": ""
+      }
+    ]
+  }
+]
