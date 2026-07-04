@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GHOST // LOG</title>
+<style>
+  :root {
+    --bg: #121212; --panel: #1A1A1A; --panel2: #1E1E1E;
+    --border: #2C2C2C; --border2: #333; --text: #EDEAE4;
+    --muted: #8A8578; --dim: #6B6862; --accent: #C1443C;
+    --olive: #6B7256; --olive2: #8A8F6E;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text); margin: 0;
+    font-family: 'Courier New', monospace;
+  }
+  input, select, textarea {
+    background: #181818; border: 1px solid var(--border2); color: var(--text);
+    font-family: 'Courier New', monospace; border-radius: 3px; padding: 8px 10px; font-size: 13px;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  button { font-family: 'Courier New', monospace; cursor: pointer; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  h1, h2, h3 { font-family: Georgia, serif; margin: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th, td { padding: 6px 4px; text-align: left; }
+  th { color: var(--dim); border-bottom: 1px solid var(--border); font-weight: 500; }
+  td { border-bottom: 1px solid #222; }
+  .btn-primary { background: var(--accent); border: none; color: var(--text); border-radius: 4px; padding: 10px 24px; font-size: 13px; font-weight: 700; letter-spacing: 0.04em; }
+  .btn-secondary { background: #232323; border: 1px solid #444; color: var(--text); border-radius: 4px; padding: 9px 18px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+  .btn-dashed { background: none; border: 1px dashed #444; color: var(--muted); border-radius: 3px; padding: 8px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+  .tab-btn { background: none; border: none; padding: 14px 16px; color: var(--dim); border-bottom: 2px solid transparent; font-size: 12px; letter-spacing: 0.06em; font-weight: 500; }
+  .tab-btn.active { color: var(--text); border-bottom: 2px solid var(--accent); font-weight: 700; }
+  .stat-card { background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 14px 16px; flex: 1; min-width: 120px; }
+  .stat-label { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .stat-value { font-family: Georgia, serif; font-size: 26px; font-weight: 600; color: var(--text); line-height: 1; margin-top: 6px; }
+  .stat-sub { font-size: 11px; color: var(--olive); margin-top: 4px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 20px; }
+  .row-grid { display: grid; grid-template-columns: 2fr 0.7fr 0.7fr 0.8fr 0.6fr 1.2fr auto; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .session-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+  .session-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; cursor: pointer; }
+  label.field-label { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
+  .pill { background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 20px; padding: 6px 14px; font-size: 11px; }
+  .pill.active { background: var(--accent); border-color: var(--accent); }
+  .sync-banner { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--panel2); border: 1px solid var(--border); border-radius: 4px; padding: 10px 14px; margin-bottom: 16px; font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .dot.ok { background: var(--olive2); }
+  .dot.bad { background: var(--accent); }
+  .empty-state { color: var(--dim); font-size: 13px; padding: 30px; text-align: center; border: 1px dashed var(--border); border-radius: 6px; }
+  a { color: var(--accent); word-break: break-all; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div style="border-bottom:1px solid var(--border); padding:20px 20px 16px;">
+  <div style="display:flex; align-items:baseline; gap:10px;">
+    <span style="color:var(--accent); font-size:18px;">▮▮</span>
+    <h1 style="font-size:22px; font-weight:700; letter-spacing:0.02em;">GHOST // LOG</h1>
+  </div>
+  <div style="font-size:11px; color:var(--muted); margin-top:4px; letter-spacing:0.04em;">
+    HYPERTROPHY BLOCK · 5-6 DAYS/WK · INSTITUTE GYM
+  </div>
+</div>
+
+<div style="padding:16px 20px 0;">
+  <div class="sync-banner">
+    <span id="syncStatus"><span class="dot" id="syncDot"></span><span id="syncText">Not connected to GitHub</span></span>
+    <button class="btn-secondary" style="padding:5px 12px; font-size:10px;" id="toggleSetupBtn">CONNECT GITHUB</button>
+  </div>
+</div>
+
+<div id="setupPanel" style="padding:0 20px;">
+  <div class="card" style="margin-bottom:20px;">
+    <h3 style="font-size:16px; margin-bottom:12px;">CONNECT GITHUB REPO</h3>
+    <div style="font-size:12px; color:var(--muted); margin-bottom:14px; line-height:1.5;">
+      Data is written to a JSON file in your repo. Your token is stored only in this browser's local storage — never sent anywhere except GitHub's API.
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+      <div><label class="field-label">OWNER (username)</label><input id="cfgOwner" placeholder="yourusername" /></div>
+      <div><label class="field-label">REPO NAME</label><input id="cfgRepo" placeholder="ghost-log" /></div>
+      <div><label class="field-label">FILE PATH</label><input id="cfgPath" placeholder="log.json" value="log.json" /></div>
+      <div><label class="field-label">BRANCH</label><input id="cfgBranch" placeholder="main" value="main" /></div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label class="field-label">PERSONAL ACCESS TOKEN (fine-grained, Contents: read/write)</label>
+      <input type="password" id="cfgToken" placeholder="ghp_..." />
+    </div>
+    <button class="btn-primary" id="saveConfigBtn">SAVE &amp; CONNECT</button>
+    <div id="setupError" style="color:var(--accent); font-size:12px; margin-top:10px;"></div>
+  </div>
+</div>
+
+<div style="display:flex; border-bottom:1px solid var(--border); padding:0 20px;">
+  <button class="tab-btn active" data-tab="log">LOG SESSION</button>
+  <button class="tab-btn" data-tab="history">HISTORY</button>
+  <button class="tab-btn" data-tab="progress">PROGRESS</button>
+</div>
+
+<div style="padding:20px;">
+  <div style="display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;" id="statsRow"></div>
+
+  <div id="tab-log">
+    <div class="card">
+      <div style="display:flex; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+        <div style="flex:1 1 160px;"><label class="field-label">DATE</label><input type="date" id="sessionDate" /></div>
+        <div style="flex:2 1 200px;"><label class="field-label">SESSION NAME</label><input type="text" id="sessionName" placeholder="e.g. Push Day" /></div>
+      </div>
+      <div id="rowsContainer"></div>
+      <button class="btn-dashed" id="addRowBtn" style="margin-bottom:16px;">+ ADD EXERCISE</button>
+      <div style="margin-bottom:14px;">
+        <label class="field-label">SESSION NOTES</label>
+        <textarea rows="2" id="sessionNotes" placeholder="Energy, sleep, how it felt..."></textarea>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <button class="btn-primary" id="saveSessionBtn">LOG SESSION</button>
+        <span id="saveMsg" style="font-size:12px; color:var(--olive2);"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="tab-history" class="hidden"></div>
+  <div id="tab-progress" class="hidden"></div>
+</div>
+
+<div style="padding:0 20px; margin-top:10px;">
+  <div style="font-size:10px; color:var(--dim); line-height:1.6;">
+    Raw log URL for your coach:<br/>
+    <a id="rawUrlLink" href="#" target="_blank">Connect GitHub first.</a>
+  </div>
+</div>
+
+<script>
+// ===== Reference data =====
+var STARTING_WEIGHTS = {
+  "Barbell Bench Press": 6.25, "Incline Dumbbell Press": 10, "Barbell OHP": 15,
+  "Lateral Raise (DB)": 5, "Dumbbell Curl": 5, "Tricep Pushdown (cable)": 20.7, "Leg Curl (seated)": 40
+};
+var CALIBRATION_FLAGS = ["Barbell Bench Press","Dumbbell Bench Press","Incline Barbell Press","Conventional Deadlift","Barbell Bent Over Row","Lat Pulldown (bar)","Barbell Back Squat","Romanian Deadlift"];
+var PREFERRED = ["Hack Squat (machine)","Dumbbell OHP","Face Pull (cable)","Overhead Tricep Ext (cable)"];
+var EXERCISES_BY_GROUP = {
+  "Quad Dominant": ["Barbell Back Squat","Hack Squat (machine)","Leg Press","Bulgarian Split Squat","Lunges (barbell/DB)","Step Ups","Leg Extension (machine)"],
+  "Posterior Chain": ["Conventional Deadlift","Sumo Deadlift","Romanian Deadlift","Leg Curl (seated)"],
+  "Push Horizontal": ["Barbell Bench Press","Dumbbell Bench Press","Incline Barbell Press","Incline Dumbbell Press","Cable Fly","Pec Dec (machine)"],
+  "Push Vertical": ["Barbell OHP","Dumbbell OHP","Seated Machine Press","Lateral Raise (DB)","Lateral Raise (cable)","Rear Delt Fly (machine)","Face Pull (cable)"],
+  "Pull Horizontal": ["Barbell Bent Over Row","Dumbbell Row","Cable Row (seated)"],
+  "Pull Vertical": ["Pull Up (bodyweight)","Chin Up","Lat Pulldown (bar)","Lat Pulldown (neutral)","Single Arm Pulldown","Straight Arm Pulldown"],
+  "Arms": ["Barbell Curl","Dumbbell Curl","Incline Dumbbell Curl","Cable Curl","Hammer Curl","Preacher Curl (machine)","Tricep Pushdown (cable)","Overhead Tricep Ext (cable)","Skull Crushers"],
+  "Core": ["Plank","Cable Crunch","Ab Wheel"],
+  "Calves": ["Standing Calf Raise","Seated Calf Raise"]
+};
+var ALL_EXERCISES = [].concat.apply([], Object.keys(EXERCISES_BY_GROUP).map(function(k){ return EXERCISES_BY_GROUP[k]; }));
+var RPE_COLORS = { 6:"#6B7256",7:"#8A8F6E",8:"#C1443C",9:"#A83A32",10:"#7A2A24" };
+var TRACKED_LIFTS = ["Barbell Back Squat","Barbell Bench Press","Conventional Deadlift","Barbell OHP","Barbell Bent Over Row"];
+
+// ===== State =====
+var cfg = {};
+var sessions = [];
+var sha = null;
+var rows = [];
+var expandedSessionId = null;
+var selectedChartLift = null;
+
+function todayISO() { return new Date().toISOString().slice(0,10); }
+function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
+
+function getConfig() {
+  try { return JSON.parse(localStorage.getItem("ghostlog_config") || "{}"); } catch(e) { return {}; }
+}
+function saveConfigLS(c) { localStorage.setItem("ghostlog_config", JSON.stringify(c)); }
+
+function setSync(state, msg) {
+  var dot = document.getElementById("syncDot");
+  var text = document.getElementById("syncText");
+  dot.className = "dot" + (state === "ok" ? " ok" : state === "error" ? " bad" : "");
+  text.textContent = msg;
+}
+
+function ghGetFile(c, cb) {
+  var url = "https://api.github.com/repos/" + c.owner + "/" + c.repo + "/contents/" + c.path + "?ref=" + (c.branch || "main");
+  fetch(url, { headers: { "Authorization": "token " + c.token, "Accept": "application/vnd.github+json" } })
+    .then(function(res) {
+      if (res.status === 404) { cb(null, { sessions: [], sha: null }); return; }
+      if (!res.ok) { res.json().then(function(e){ cb(new Error("GitHub read failed: " + res.status + " " + (e.message||""))); }).catch(function(){ cb(new Error("GitHub read failed: " + res.status)); }); return; }
+      res.json().then(function(data) {
+        var content = "";
+        try { content = decodeURIComponent(escape(atob(data.content))); } catch(e) { content = "[]"; }
+        var parsed = [];
+        try { parsed = JSON.parse(content); } catch(e) { parsed = []; }
+        cb(null, { sessions: parsed, sha: data.sha });
+      });
+    })
+    .catch(function(err) { cb(err); });
+}
+
+function ghPutFile(c, sessionsData, currentSha, cb) {
+  var url = "https://api.github.com/repos/" + c.owner + "/" + c.repo + "/contents/" + c.path;
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(sessionsData, null, 2))));
+  var body = { message: "Log update " + new Date().toISOString(), content: content, branch: c.branch || "main" };
+  if (currentSha) body.sha = currentSha;
+  fetch(url, {
+    method: "PUT",
+    headers: { "Authorization": "token " + c.token, "Accept": "application/vnd.github+json" },
+    body: JSON.stringify(body)
+  }).then(function(res) {
+    if (!res.ok) { res.json().then(function(e){ cb(new Error("GitHub write failed: " + res.status + " " + (e.message||""))); }).catch(function(){ cb(new Error("GitHub write failed: " + res.status)); }); return; }
+    res.json().then(function(data) { cb(null, data.content.sha); });
+  }).catch(function(err) { cb(err); });
+}
+
+function loadFromGithub() {
+  setSync("loading", "Pulling log from GitHub...");
+  ghGetFile(cfg, function(err, result) {
+    if (err) { setSync("error", err.message); return; }
+    sessions = result.sessions || [];
+    sha = result.sha;
+    setSync("ok", "Synced with " + cfg.owner + "/" + cfg.repo);
+    renderAll();
+  });
+}
+
+function persist(cb) {
+  if (!cfg.token) { setSync("error", "Not connected — connect GitHub to save."); if (cb) cb(); return; }
+  setSync("loading", "Pushing to GitHub...");
+  ghPutFile(cfg, sessions, sha, function(err, newSha) {
+    if (err) { setSync("error", err.message); if (cb) cb(err); return; }
+    sha = newSha;
+    setSync("ok", "Saved to " + cfg.owner + "/" + cfg.repo);
+    if (cb) cb();
+  });
+}
+
+// ===== Row management (Log tab) =====
+function newRow() { return { exercise: ALL_EXERCISES[0], sets:"", reps:"", weight:"", rpe:"", notes:"" }; }
+
+function renderRows() {
+  var container = document.getElementById("rowsContainer");
+  container.innerHTML = "";
+  rows.forEach(function(row, i) {
+    var div = document.createElement("div");
+    div.className = "row-grid";
+
+    var select = document.createElement("select");
+    Object.keys(EXERCISES_BY_GROUP).forEach(function(group) {
+      var og = document.createElement("optgroup");
+      og.label = group;
+      EXERCISES_BY_GROUP[group].forEach(function(ex) {
+        var opt = document.createElement("option");
+        opt.value = ex;
+        opt.textContent = ex + (PREFERRED.indexOf(ex) > -1 ? " ★" : "") + (CALIBRATION_FLAGS.indexOf(ex) > -1 ? " (calib)" : "");
+        if (ex === row.exercise) opt.selected = true;
+        og.appendChild(opt);
+      });
+      select.appendChild(og);
+    });
+    select.addEventListener("change", function(e) { rows[i].exercise = e.target.value; });
+
+    function makeInput(placeholder, field, value) {
+      var inp = document.createElement("input");
+      inp.placeholder = placeholder;
+      inp.value = value || "";
+      inp.addEventListener("input", function(e) { rows[i][field] = e.target.value; });
+      return inp;
+    }
+
+    var removeBtn = document.createElement("button");
+    removeBtn.textContent = "✕";
+    removeBtn.style.background = "none";
+    removeBtn.style.border = "none";
+    removeBtn.style.color = "var(--dim)";
+    removeBtn.style.padding = "4px";
+    removeBtn.style.fontSize = "16px";
+    removeBtn.addEventListener("click", function() { rows.splice(i,1); renderRows(); });
+
+    div.appendChild(select);
+    div.appendChild(makeInput("Sets","sets",row.sets));
+    div.appendChild(makeInput("Reps","reps",row.reps));
+    div.appendChild(makeInput("Kg","weight",row.weight));
+    div.appendChild(makeInput("RPE","rpe",row.rpe));
+    div.appendChild(makeInput("Notes","notes",row.notes));
+    div.appendChild(removeBtn);
+    container.appendChild(div);
+  });
+}
+
+function saveSession() {
+  var validRows = rows.filter(function(r) { return r.exercise && r.sets && r.reps && r.weight; });
+  var saveMsgEl = document.getElementById("saveMsg");
+  if (validRows.length === 0) { saveMsgEl.textContent = "Add at least one complete exercise row."; return; }
+  var sessionDate = document.getElementById("sessionDate").value || todayISO();
+  var sessionName = document.getElementById("sessionName").value || "Training Session";
+  var sessionNotes = document.getElementById("sessionNotes").value;
+  var newSession = {
+    id: Date.now().toString(), date: sessionDate, name: sessionName, notes: sessionNotes,
+    exercises: validRows.map(function(r) { return { exercise:r.exercise, sets:r.sets, reps:r.reps, weight: parseFloat(r.weight), rpe:r.rpe, notes:r.notes }; })
+  };
+  sessions.push(newSession);
+  sessions.sort(function(a,b) { return a.date.localeCompare(b.date); });
+  persist(function(err) {
+    if (err) return;
+    document.getElementById("sessionName").value = "";
+    document.getElementById("sessionNotes").value = "";
+    rows = [newRow()];
+    renderRows();
+    saveMsgEl.textContent = "Session logged & pushed.";
+    setTimeout(function(){ saveMsgEl.textContent = ""; }, 3000);
+    renderAll();
+  });
+}
+
+function deleteSession(id) {
+  sessions = sessions.filter(function(s) { return s.id !== id; });
+  persist(function() { renderAll(); });
+}
+
+// ===== Derived data =====
+function getExerciseHistory() {
+  var map = {};
+  sessions.forEach(function(s) {
+    s.exercises.forEach(function(e) {
+      if (!map[e.exercise]) map[e.exercise] = [];
+      map[e.exercise].push({ date: s.date, weight: e.weight, reps: e.reps, rpe: e.rpe });
+    });
+  });
+  Object.keys(map).forEach(function(k) { map[k].sort(function(a,b){ return a.date.localeCompare(b.date); }); });
+  return map;
+}
+
+function getCurrentWorkingWeights(history) {
+  var out = {};
+  TRACKED_LIFTS.forEach(function(lift) {
+    var hist = history[lift];
+    if (hist && hist.length) out[lift] = hist[hist.length-1].weight;
+    else if (STARTING_WEIGHTS[lift] != null) out[lift] = STARTING_WEIGHTS[lift];
+  });
+  return out;
+}
+
+// ===== Rendering =====
+function renderStats() {
+  var history = getExerciseHistory();
+  var totalSessions = sessions.length;
+  var totalVolume = sessions.reduce(function(sum, s) {
+    return sum + s.exercises.reduce(function(esum, e) {
+      var setsNum = parseFloat(e.sets) || 0, repsNum = parseFloat(e.reps) || 0;
+      return esum + setsNum * repsNum * e.weight;
+    }, 0);
+  }, 0);
+  var lastSession = sessions.length ? sessions[sessions.length-1] : null;
+  var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+  var streak = sessions.filter(function(s) { return new Date(s.date) >= cutoff; }).length;
+
+  var row = document.getElementById("statsRow");
+  row.innerHTML = "";
+  function stat(label, value, sub) {
+    var d = document.createElement("div");
+    d.className = "stat-card";
+    d.innerHTML = '<div class="stat-label">' + esc(label) + '</div><div class="stat-value">' + esc(value) + '</div>' + (sub ? '<div class="stat-sub">' + esc(sub) + '</div>' : '');
+    row.appendChild(d);
+  }
+  stat("Sessions Logged", totalSessions);
+  stat("This Week", streak, "sessions");
+  stat("Total Volume", totalVolume >= 1000 ? (totalVolume/1000).toFixed(1) + "t" : totalVolume + "kg");
+  if (lastSession) stat("Last Session", lastSession.date.slice(5), lastSession.name);
+}
+
+function renderHistory() {
+  var container = document.getElementById("tab-history");
+  container.innerHTML = "";
+  if (sessions.length === 0) {
+    container.innerHTML = '<div class="empty-state">No sessions yet. Log your first one to start tracking.</div>';
+    return;
+  }
+  var reversed = sessions.slice().reverse();
+  reversed.forEach(function(s) {
+    var card = document.createElement("div");
+    card.className = "session-card";
+    var header = document.createElement("div");
+    header.className = "session-header";
+    header.innerHTML = '<div><span style="font-family:Georgia,serif; font-weight:600; font-size:15px;">' + esc(s.name) + '</span><span style="color:var(--dim); font-size:12px; margin-left:10px;">' + esc(s.date) + '</span></div>' +
+      '<div style="display:flex; align-items:center; gap:10px;"><span style="font-size:11px; color:var(--muted);">' + s.exercises.length + ' exercises</span><span style="color:var(--dim);">' + (expandedSessionId === s.id ? "▲" : "▼") + '</span></div>';
+    header.addEventListener("click", function() { expandedSessionId = expandedSessionId === s.id ? null : s.id; renderHistory(); });
+    card.appendChild(header);
+
+    if (expandedSessionId === s.id) {
+      var body = document.createElement("div");
+      body.style.padding = "0 16px 14px";
+      var table = document.createElement("table");
+      var thead = document.createElement("thead");
+      thead.innerHTML = "<tr><th>EXERCISE</th><th>SETS×REPS</th><th>KG</th><th>RPE</th><th>NOTES</th></tr>";
+      table.appendChild(thead);
+      var tbody = document.createElement("tbody");
+      s.exercises.forEach(function(e) {
+        var tr = document.createElement("tr");
+        var rpeColor = RPE_COLORS[Math.round(e.rpe)] || "var(--muted)";
+        tr.innerHTML = "<td>" + esc(e.exercise) + "</td><td>" + esc(e.sets) + "×" + esc(e.reps) + "</td>" +
+          '<td style="color:var(--text); font-weight:700;">' + esc(e.weight) + '</td>' +
+          '<td style="color:' + rpeColor + ';">' + esc(e.rpe || "-") + '</td>' +
+          '<td style="color:var(--muted);">' + esc(e.notes) + '</td>';
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      body.appendChild(table);
+      if (s.notes) {
+        var notesDiv = document.createElement("div");
+        notesDiv.style.marginTop = "10px"; notesDiv.style.fontSize = "12px"; notesDiv.style.color = "var(--muted)"; notesDiv.style.fontStyle = "italic";
+        notesDiv.textContent = s.notes;
+        body.appendChild(notesDiv);
+      }
+      var delBtn = document.createElement("button");
+      delBtn.textContent = "Delete session";
+      delBtn.style.background = "none"; delBtn.style.border = "none"; delBtn.style.color = "#7A2A24";
+      delBtn.style.fontSize = "11px"; delBtn.style.marginTop = "10px"; delBtn.style.padding = "0";
+      delBtn.addEventListener("click", function() { deleteSession(s.id); });
+      body.appendChild(delBtn);
+      card.appendChild(body);
+    }
+    container.appendChild(card);
+  });
+}
+
+function renderProgress() {
+  var container = document.getElementById("tab-progress");
+  container.innerHTML = "";
+  var history = getExerciseHistory();
+  var chartExercise = TRACKED_LIFTS.find(function(l) { return history[l] && history[l].length > 1; }) || TRACKED_LIFTS[0];
+  var activeLift = selectedChartLift || chartExercise;
+
+  var pills = document.createElement("div");
+  pills.style.display = "flex"; pills.style.gap = "6px"; pills.style.marginBottom = "16px"; pills.style.flexWrap = "wrap";
+  TRACKED_LIFTS.forEach(function(lift) {
+    var btn = document.createElement("button");
+    btn.className = "pill" + (activeLift === lift ? " active" : "");
+    btn.textContent = lift;
+    btn.addEventListener("click", function() { selectedChartLift = lift; renderProgress(); });
+    pills.appendChild(btn);
+  });
+  container.appendChild(pills);
+
+  var chartData = history[activeLift] || [];
+  if (chartData.length > 0) {
+    var wrap = document.createElement("div");
+    wrap.style.background = "var(--panel)"; wrap.style.border = "1px solid var(--border)"; wrap.style.borderRadius = "6px"; wrap.style.padding = "20px";
+    var title = document.createElement("div");
+    title.style.fontFamily = "Georgia, serif"; title.style.fontSize = "16px"; title.style.marginBottom = "12px";
+    title.textContent = activeLift;
+    wrap.appendChild(title);
+    wrap.appendChild(buildSvgChart(chartData));
+    container.appendChild(wrap);
+  } else {
+    var empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "No data yet for " + activeLift + ". Log a few sessions to see the trend.";
+    container.appendChild(empty);
+  }
+
+  var weightsSection = document.createElement("div");
+  weightsSection.style.marginTop = "20px";
+  var label = document.createElement("div");
+  label.style.fontSize = "11px"; label.style.color = "var(--muted)"; label.style.letterSpacing = "0.06em"; label.style.marginBottom = "10px";
+  label.textContent = "CURRENT WORKING WEIGHTS";
+  weightsSection.appendChild(label);
+  var grid = document.createElement("div");
+  grid.style.display = "grid"; grid.style.gridTemplateColumns = "repeat(auto-fill, minmax(140px, 1fr))"; grid.style.gap = "10px";
+  var weights = getCurrentWorkingWeights(history);
+  Object.keys(weights).forEach(function(lift) {
+    var card = document.createElement("div");
+    card.style.background = "var(--panel)"; card.style.border = "1px solid var(--border)"; card.style.borderRadius = "4px"; card.style.padding = "10px 12px";
+    card.innerHTML = '<div style="font-size:10px; color:var(--dim);">' + esc(lift) + '</div><div style="font-family:Georgia,serif; font-size:20px; font-weight:600;">' + esc(weights[lift]) + ' kg</div>';
+    grid.appendChild(card);
+  });
+  weightsSection.appendChild(grid);
+  container.appendChild(weightsSection);
+}
+
+function buildSvgChart(data) {
+  var w = 600, h = 220, pad = 30;
+  var weights = data.map(function(d) { return d.weight; });
+  var minW = Math.min.apply(null, weights) - 5, maxW = Math.max.apply(null, weights) + 5;
+  var points = data.map(function(d, i) {
+    var x = pad + (i / Math.max(data.length - 1, 1)) * (w - pad * 2);
+    var y = h - pad - ((d.weight - minW) / ((maxW - minW) || 1)) * (h - pad * 2);
+    return { x: x, y: y, date: d.date, weight: d.weight };
+  });
+  var pathD = points.map(function(p, i) { return (i === 0 ? "M" : "L") + p.x + "," + p.y; }).join(" ");
+
+  var svgNS = "http://www.w3.org/2000/svg";
+  var svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+  svg.style.width = "100%"; svg.style.height = "220px";
+
+  function line(x1,y1,x2,y2,stroke) {
+    var l = document.createElementNS(svgNS, "line");
+    l.setAttribute("x1",x1); l.setAttribute("y1",y1); l.setAttribute("x2",x2); l.setAttribute("y2",y2); l.setAttribute("stroke",stroke);
+    return l;
+  }
+  svg.appendChild(line(pad, h-pad, w-pad, h-pad, "#2C2C2C"));
+  svg.appendChild(line(pad, pad, pad, h-pad, "#2C2C2C"));
+
+  var path = document.createElementNS(svgNS, "path");
+  path.setAttribute("d", pathD); path.setAttribute("fill","none"); path.setAttribute("stroke","#C1443C"); path.setAttribute("stroke-width","2");
+  svg.appendChild(path);
+
+  points.forEach(function(p) {
+    var circle = document.createElementNS(svgNS, "circle");
+    circle.setAttribute("cx",p.x); circle.setAttribute("cy",p.y); circle.setAttribute("r","4"); circle.setAttribute("fill","#C1443C");
+    svg.appendChild(circle);
+
+    var dateText = document.createElementNS(svgNS, "text");
+    dateText.setAttribute("x",p.x); dateText.setAttribute("y", h-pad+16); dateText.setAttribute("font-size","10"); dateText.setAttribute("fill","#6B6862"); dateText.setAttribute("text-anchor","middle");
+    dateText.textContent = p.date.slice(5);
+    svg.appendChild(dateText);
+
+    var wText = document.createElementNS(svgNS, "text");
+    wText.setAttribute("x",p.x); wText.setAttribute("y", p.y-10); wText.setAttribute("font-size","10"); wText.setAttribute("fill","#EDEAE4"); wText.setAttribute("text-anchor","middle");
+    wText.textContent = p.weight;
+    svg.appendChild(wText);
+  });
+
+  return svg;
+}
+
+function renderRawUrl() {
+  var link = document.getElementById("rawUrlLink");
+  if (cfg.owner && cfg.repo) {
+    var url = "https://raw.githubusercontent.com/" + cfg.owner + "/" + cfg.repo + "/" + (cfg.branch || "main") + "/" + cfg.path;
+    link.href = url;
+    link.textContent = url;
+  } else {
+    link.href = "#";
+    link.textContent = "Connect GitHub first.";
+  }
+}
+
+function renderAll() {
+  renderStats();
+  renderRows();
+  renderHistory();
+  renderProgress();
+  renderRawUrl();
+}
+
+// ===== Tabs =====
+document.querySelectorAll(".tab-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".tab-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    var tab = btn.getAttribute("data-tab");
+    ["log","history","progress"].forEach(function(t) {
+      document.getElementById("tab-" + t).classList.toggle("hidden", t !== tab);
+    });
+  });
+});
+
+// ===== Setup panel =====
+function refreshSetupPanel() {
+  document.getElementById("cfgOwner").value = cfg.owner || "";
+  document.getElementById("cfgRepo").value = cfg.repo || "";
+  document.getElementById("cfgPath").value = cfg.path || "log.json";
+  document.getElementById("cfgBranch").value = cfg.branch || "main";
+  document.getElementById("cfgToken").value = cfg.token || "";
+}
+
+document.getElementById("toggleSetupBtn").addEventListener("click", function() {
+  var panel = document.getElementById("setupPanel");
+  panel.classList.toggle("hidden");
+});
+
+document.getElementById("saveConfigBtn").addEventListener("click", function() {
+  var newCfg = {
+    owner: document.getElementById("cfgOwner").value.trim(),
+    repo: document.getElementById("cfgRepo").value.trim(),
+    path: document.getElementById("cfgPath").value.trim() || "log.json",
+    branch: document.getElementById("cfgBranch").value.trim() || "main",
+    token: document.getElementById("cfgToken").value.trim()
+  };
+  var errEl = document.getElementById("setupError");
+  if (!newCfg.owner || !newCfg.repo || !newCfg.token) {
+    errEl.textContent = "Owner, repo, and token are required.";
+    return;
+  }
+  errEl.textContent = "";
+  cfg = newCfg;
+  saveConfigLS(cfg);
+  document.getElementById("setupPanel").classList.add("hidden");
+  loadFromGithub();
+});
+
+document.getElementById("addRowBtn").addEventListener("click", function() {
+  rows.push(newRow());
+  renderRows();
+});
+
+document.getElementById("saveSessionBtn").addEventListener("click", saveSession);
+
+// ===== Init =====
+function init() {
+  document.getElementById("sessionDate").value = todayISO();
+  cfg = getConfig();
+  rows = [newRow()];
+  refreshSetupPanel();
+  if (!cfg.token) {
+    document.getElementById("setupPanel").classList.remove("hidden");
+  } else {
+    document.getElementById("setupPanel").classList.add("hidden");
+    loadFromGithub();
+  }
+  renderAll();
+}
+
+init();
+</script>
+</body>
+</html>
+
